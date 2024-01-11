@@ -1,6 +1,8 @@
-﻿namespace WebApp.Controllers
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace WebApp.Controllers
 {
-    public class AuthController
+    public class AuthController : Controller
     {
 
     }
