@@ -30,11 +30,16 @@ builder.Services
             OnAuthenticationFailed = async (context) =>
             {
                 // TODO log error
+                if (context.Exception != null)
+                {
+                    throw new Exception("Authentication failure.", context.Exception);
+                }
                 await Task.FromResult(string.Empty);
             },
             OnForbidden = async (context) =>
             {
-                // TODO log error / response code
+                // TODO log error / Status Code
+                throw new Exception($"Forbidden failure. StatusCode: {context.Response?.StatusCode}.");
                 await Task.FromResult(string.Empty);
             }
         };
