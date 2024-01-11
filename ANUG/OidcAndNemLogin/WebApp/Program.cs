@@ -1,8 +1,14 @@
 using ITfoxtec.Identity;
+using ITfoxtec.Identity.Discovery;
+using ITfoxtec.Identity.Helpers;
+using ITfoxtec.Identity.Util;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using System.Globalization;
+using WebApp.Identity;
 using WebApp.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,12 +18,72 @@ builder.Services.BindConfig<AppSettings>(builder.Configuration, nameof(AppSettin
 
 IdentityModelEventSource.ShowPII = true; //To show detail of error and see the problem
 
+builder.Services.AddSingleton((serviceProvider) =>
+{
+    var settings = serviceProvider.GetService<IdentitySettings>();
+    var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+
+    return new OidcDiscoveryHandler(httpClientFactory, UrlCombine.Combine(settings.FoxIDsAuthority, IdentityConstants.OidcDiscovery.Path));
+});
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
 })
-    .AddCookie()
+    .AddCookie(options =>
+    {
+        options.Events.OnValidatePrincipal = async (context) =>
+        {
+            var logoutMemoryCache = context.HttpContext.RequestServices.GetService<LogoutMemoryCache>();
+            var sessionId = context.Principal.Claims.Where(c => c.Type == JwtClaimTypes.SessionId).Select(c => c.Value).FirstOrDefault();
+            foreach (var item in logoutMemoryCache.List)
+            {
+                if (sessionId == item)
+                {
+                    logoutMemoryCache.Remove(item);
+                    // Handle Front-Channel Logout
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync();
+                    return;
+                }
+            }
+
+            try
+            {
+                var expiresUtc = DateTimeOffset.Parse(context.Properties.GetTokenValue("expires_at"));
+
+                // Tokens expires 30 seconds before actual expiration time.
+                if (expiresUtc < DateTimeOffset.UtcNow.AddSeconds(30))
+                {
+                    var tokenResponse = await RefreshTokenHandler.ResolveRefreshToken(context, identitySettings);
+
+                    context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.AccessToken, tokenResponse.AccessToken);
+                    context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.IdToken, tokenResponse.IdToken);
+                    if (!tokenResponse.RefreshToken.IsNullOrEmpty())
+                    {
+                        context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.RefreshToken, tokenResponse.RefreshToken);
+                    }
+                    else
+                    {
+                        context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.RefreshToken, context.Properties.GetTokenValue(OpenIdConnectParameterNames.RefreshToken));
+                    }
+                    context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.TokenType, tokenResponse.TokenType);
+
+                    var newExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn.HasValue ? tokenResponse.ExpiresIn.Value : 30);
+                    context.Properties.UpdateTokenValue("expires_at", newExpiresUtc.ToString("o", CultureInfo.InvariantCulture));
+
+                    // Cookie should be renewed.
+                    context.ShouldRenew = true;
+                }
+            }
+            catch
+            {
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync();
+            }
+        };
+    })
     .AddOpenIdConnect(options =>
     {
         options.Authority = identitySettings.FoxIDsAuthority;
@@ -58,6 +124,10 @@ builder.Services.AddAuthentication(options =>
             await Task.FromResult(string.Empty);
         };
     });
+
+
+builder.Services.AddTransient<TokenExecuteHelper>();
+builder.Services.AddSingleton<LogoutMemoryCache>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
