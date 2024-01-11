@@ -1,8 +1,19 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Default";
 }
+<h2>@ViewData["Title"]</h2>
+<strong>Default page, the user is not require to be authenticated</strong>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (User.Identity.IsAuthenticated)
+{
+    <p>
+        <h4>ID token claims</h4>
+        <dl>
+            @foreach (var claim in User.Claims)
+            {
+                <dt>@claim.Type</dt>
+                <dd style="padding-left: 10px">@claim.Value</dd>
+            }
+        </dl>
+    </p>
+}

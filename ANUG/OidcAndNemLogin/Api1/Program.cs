@@ -1,6 +1,14 @@
+using Api1.Models;
+using Api1.Policies;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var identitySettings = builder.Services.BindConfig<IdentitySettings>(builder.Configuration, nameof(IdentitySettings));
+
+// Add OAuth 2.0 Bearer Token Usage
+
+// Access policy
+builder.Services.AddAuthorization(Api1AccessAuthorizeAttribute.AddPolicy);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -1,22 +1,24 @@
 using Api1.Models;
+using Api1.Policies;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api1.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Api1AccessAuthorize]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
+        private static readonly string[] Summaries =
+        [
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        ];
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<WeatherForecastController> logger;
 
         public WeatherForecastController(ILogger<WeatherForecastController> logger)
         {
-            _logger = logger;
+            this.logger = logger;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]

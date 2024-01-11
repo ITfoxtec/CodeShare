@@ -1,6 +1,14 @@
+using WebApp.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var identitySettings = builder.Services.BindConfig<IdentitySettings>(builder.Configuration, nameof(IdentitySettings));
+builder.Services.BindConfig<AppSettings>(builder.Configuration, nameof(AppSettings));
+
+// Add OIDC
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
