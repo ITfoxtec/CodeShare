@@ -30,14 +30,12 @@ builder.Services.AddAuthentication(options =>
         // False to support refresh token renewal.
         options.UseTokenLifetime = false;
 
-        // To show the acr claim in the User.Claims collection
-        options.ClaimActions.Remove("acr");
-
         options.Scope.Add("offline_access");
         options.Scope.Add("profile");
         options.Scope.Add("email");
-        //options.Scope.Add("api1:read);
-        //options.Scope.Add("api1:update);
+        options.Scope.Add("role");
+        options.Scope.Add("api1:read");
+        options.Scope.Add("api1:update");
 
         options.MapInboundClaims = false;
         options.TokenValidationParameters.NameClaimType = JwtClaimTypes.Subject;
