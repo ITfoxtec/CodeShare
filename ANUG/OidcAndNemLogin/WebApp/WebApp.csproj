@@ -14,5 +14,9 @@
   <ItemGroup>
     <ProjectReference Include="..\HelperLibrary\HelperLibrary.csproj" />
   </ItemGroup>
+	
+  <ItemGroup>
+    <Folder Include="Identity\" />
+  </ItemGroup>
 
 </Project>
