@@ -39,6 +39,7 @@ namespace WebApp.Controllers
         {
             var client = httpClientFactory.CreateClient();
             // add access token
+
             using var response = await client.GetAsync(appSettings.Api1Url);
             if (response.IsSuccessStatusCode)
             {
