@@ -1,0 +1,364 @@
+Test user: test@anug.com
+     Pass: Formel1bil
+
+// **************************************************************************************************
+// OpenID Connect login and logout
+// **************************************************************************************************
+
+// Add OIDC in WebApp Program.cs
+Namespaces:
+using ITfoxtec.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.IdentityModel.Logging;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
+Code:
+IdentityModelEventSource.ShowPII = true; //To show detail of error and see the problem
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+})
+    .AddCookie()
+    .AddOpenIdConnect(options =>
+    {
+        options.Authority = identitySettings.FoxIDsAuthority;
+        options.ClientId = identitySettings.ClientId;
+        options.ClientSecret = identitySettings.ClientSecret;
+
+        options.ResponseType = OpenIdConnectResponseType.Code;
+
+        options.SaveTokens = true;
+
+        options.Scope.Add("offline_access");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+        options.Scope.Add("role");
+        options.Scope.Add("api1:read");
+        options.Scope.Add("api1:update");
+
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters.NameClaimType = JwtClaimTypes.Subject;
+        options.TokenValidationParameters.RoleClaimType = JwtClaimTypes.Role;
+
+        options.Events.OnTokenResponseReceived = async (context) =>
+        {
+            if (!context.TokenEndpointResponse.Error.IsNullOrEmpty())
+            {
+                throw new Exception($"Token response error. {context.TokenEndpointResponse.Error}, {context.TokenEndpointResponse.ErrorDescription} ");
+            }
+            await Task.FromResult(string.Empty);
+        };
+        options.Events.OnRemoteFailure = async (context) =>
+        {
+            if (context.Failure != null)
+            {
+                throw new Exception("Remote failure.", context.Failure);
+            }
+            await Task.FromResult(string.Empty);
+        };
+    });
+
+
+// Add UseAuthentication in WebApp Program.cs
+Code:
+app.UseAuthentication();
+
+
+// Add login and logout in WebApp AuthController.cs
+Namespaces:
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Mvc;
+
+Code:
+        public IActionResult Login()
+        {
+            var redirectUrl = Url.Action(nameof(HomeController.Secure), "Home");
+            return Challenge(new AuthenticationProperties { RedirectUri = redirectUrl }, OpenIdConnectDefaults.AuthenticationScheme);
+        }
+
+        [ValidateAntiForgeryToken]
+        public IActionResult Logout()
+        {
+            var callbackUrl = Url.Action(nameof(HomeController.Index), "Home", values: null, protocol: Request.Scheme);
+            return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
+                CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+        }
+
+
+// **************************************************************************************************
+// OAuth 2.0 API
+// **************************************************************************************************
+
+// add access token in API call in WebApp HomeController.cs
+Namespaces:
+using ITfoxtec.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
+Code:
+            var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            client.SetAuthorizationHeaderBearer(accessToken);
+
+
+// Add OAuth 2.0 Bearer Token Usage in API1 Program.cs
+Namespaces:
+using ITfoxtec.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Logging;
+
+Code:
+IdentityModelEventSource.ShowPII = true; //To show detail of error and see the problem
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = identitySettings.FoxIDsAuthority;
+        options.Audience = identitySettings.ResourceId;
+
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters.NameClaimType = JwtClaimTypes.Subject;
+        options.TokenValidationParameters.RoleClaimType = JwtClaimTypes.Role;
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async (context) =>
+            {
+                await Task.FromResult(string.Empty);
+            },
+            OnAuthenticationFailed = async (context) =>
+            {
+                // TODO log error
+                if (context.Exception != null)
+                {
+                    throw new Exception("Authentication failure.", context.Exception);
+                }
+                await Task.FromResult(string.Empty);
+            },
+            OnForbidden = async (context) =>
+            {
+                // TODO log error / Status Code
+                throw new Exception($"Forbidden failure. StatusCode: {context.Response?.StatusCode}.");
+                await Task.FromResult(string.Empty);
+            }
+        };
+    });
+
+
+// Add UseAuthentication in API1 Program.cs
+Code:
+app.UseAuthentication();
+
+
+// **************************************************************************************************
+// OpenID Connect token refresh
+// **************************************************************************************************
+
+// Not use token lifetime in WebApp Program.cs
+Code (after options.SaveTokens = true;):
+        // False to support refresh token renewal.
+        options.UseTokenLifetime = false;
+
+
+// Add token refresh in .AddCookie in WebApp Program.cs
+Namespaces:
+using ITfoxtec.Identity;
+using ITfoxtec.Identity.Discovery;
+using ITfoxtec.Identity.Helpers;
+using ITfoxtec.Identity.Util;
+using System.Globalization;
+using WebApp.Identity;
+using WebApp.Models;
+
+Code:
+    .AddCookie(options =>
+    {
+        options.Events.OnValidatePrincipal = async (context) =>
+        {
+            try
+            {
+                var expiresUtc = DateTimeOffset.Parse(context.Properties.GetTokenValue("expires_at"));
+
+                // Tokens expires 30 seconds before actual expiration time.
+                if (expiresUtc < DateTimeOffset.UtcNow.AddSeconds(30))
+                {
+                    var tokenResponse = await RefreshTokenHandler.ResolveRefreshToken(context, identitySettings);
+
+                    context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.AccessToken, tokenResponse.AccessToken);
+                    context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.IdToken, tokenResponse.IdToken);
+                    if (!tokenResponse.RefreshToken.IsNullOrEmpty())
+                    {
+                        context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.RefreshToken, tokenResponse.RefreshToken);
+                    }
+                    else
+                    {
+                        context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.RefreshToken, context.Properties.GetTokenValue(OpenIdConnectParameterNames.RefreshToken));
+                    }
+                    context.Properties.UpdateTokenValue(OpenIdConnectParameterNames.TokenType, tokenResponse.TokenType);
+
+                    var newExpiresUtc = DateTimeOffset.UtcNow.AddSeconds(tokenResponse.ExpiresIn.HasValue ? tokenResponse.ExpiresIn.Value : 30);
+                    context.Properties.UpdateTokenValue("expires_at", newExpiresUtc.ToString("o", CultureInfo.InvariantCulture));
+
+                    // Cookie should be renewed.
+                    context.ShouldRenew = true;
+                }
+            }
+            catch
+            {
+                context.RejectPrincipal();
+                await context.HttpContext.SignOutAsync();
+            }
+        };
+    })
+
+
+// Add OIDC in WebApp RefreshTokenHandler.cs
+Namespaces:
+using ITfoxtec.Identity.Messages;
+using ITfoxtec.Identity.Tokens;
+using ITfoxtec.Identity;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using System.Net;
+using WebApp.Models;
+using Microsoft.AspNetCore.Authentication;
+
+Code:
+        public static async Task<TokenResponse> ResolveRefreshToken(CookieValidatePrincipalContext context, IdentitySettings identitySettings)
+        {
+            var tokenRequest = new TokenRequest
+            {
+                GrantType = IdentityConstants.GrantTypes.RefreshToken,
+                RefreshToken = context.Properties.GetTokenValue(OpenIdConnectParameterNames.RefreshToken),
+                ClientId = identitySettings.ClientId,
+            };
+            var clientCredentials = new ClientCredentials
+            {
+                ClientSecret = identitySettings.ClientSecret,
+            };
+
+            var oidcDiscoveryHandler = context.HttpContext.RequestServices.GetService<OidcDiscoveryHandler>();
+            var oidcDiscovery = await oidcDiscoveryHandler.GetOidcDiscoveryAsync();
+
+            var request = new HttpRequestMessage(HttpMethod.Post, oidcDiscovery.TokenEndpoint);
+            request.Content = new FormUrlEncodedContent(tokenRequest.ToDictionary().AddToDictionary(clientCredentials));
+
+            var httpClientFactory = context.HttpContext.RequestServices.GetService<IHttpClientFactory>();
+
+            var client = httpClientFactory.CreateClient();
+            using var response = await client.SendAsync(request);
+            switch (response.StatusCode)
+            {
+                case HttpStatusCode.OK:
+                    var result = await response.Content.ReadAsStringAsync();
+                    var tokenResponse = result.ToObject<TokenResponse>();
+                    tokenResponse.Validate(true);
+                    if (tokenResponse.AccessToken.IsNullOrEmpty()) throw new ArgumentNullException(nameof(tokenResponse.AccessToken), tokenResponse.GetTypeName());
+                    if (tokenResponse.ExpiresIn <= 0) throw new ArgumentNullException(nameof(tokenResponse.ExpiresIn), tokenResponse.GetTypeName());
+
+                    var oidcDiscoveryKeySet = await oidcDiscoveryHandler.GetOidcDiscoveryKeysAsync();
+                    (var newPrincipal, var newSecurityToken) = JwtHandler.ValidateToken(tokenResponse.IdToken, oidcDiscovery.Issuer, oidcDiscoveryKeySet.Keys, identitySettings.ClientId);
+                    var atHash = newPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.AtHash).Single().Value;
+                    if (atHash != await tokenResponse.AccessToken.LeftMostBase64urlEncodedHashAsync(IdentityConstants.Algorithms.Asymmetric.RS256))
+                    {
+                        throw new Exception("Access Token hash claim in ID token do not match the access token.");
+                    }
+                    if (context.Principal.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Single().Value != newPrincipal.Claims.Where(c => c.Type == JwtClaimTypes.Subject).Single().Value)
+                    {
+                        throw new Exception("New principal has invalid sub claim.");
+                    }
+
+                    return tokenResponse;
+
+                case HttpStatusCode.BadRequest:
+                    var resultBadRequest = await response.Content.ReadAsStringAsync();
+                    var tokenResponseBadRequest = resultBadRequest.ToObject<TokenResponse>();
+                    tokenResponseBadRequest.Validate(true);
+                    throw new Exception($"Error, Bad request. StatusCode={response.StatusCode}");
+
+                default:
+                    throw new Exception($"Error, Status Code not expected. StatusCode={response.StatusCode}");
+            }
+        }
+
+
+// Add Oidc Discovery in WebApp Program.cs
+Namespaces:
+using ITfoxtec.Identity.Discovery;
+
+Code:
+builder.Services.AddSingleton((serviceProvider) =>
+{
+    var settings = serviceProvider.GetService<IdentitySettings>();
+    var httpClientFactory = serviceProvider.GetService<IHttpClientFactory>();
+
+    return new OidcDiscoveryHandler(httpClientFactory, UrlCombine.Combine(settings.FoxIDsAuthority, IdentityConstants.OidcDiscovery.Path));
+});
+
+
+// **************************************************************************************************
+// OpenID Connect Front-Channel Logout 
+// **************************************************************************************************
+
+// Add FrontChannelLogout in WebApp AuthController.cs
+Namespaces:
+﻿using ITfoxtec.Identity;
+using WebApp.Identity;
+
+Code:
+        public IActionResult FrontChannelLogout([FromQuery(Name = JwtClaimTypes.Issuer)] string issuer, [FromQuery(Name = JwtClaimTypes.SessionId)] string sessionId)
+        {
+            logoutMemoryCache.List.Add(sessionId);
+            return Ok();
+        }
+
+
+// Add cache in WebApp LogoutMemoryCache.cs
+Namespaces:
+﻿using System.Collections.Concurrent;
+
+Code:
+    public class LogoutMemoryCache
+    {
+        public ConcurrentBag<string> List { get; private set; } = new ConcurrentBag<string>();
+
+        public void Remove(string item)
+        {
+            List = new ConcurrentBag<string>(List.Except(new[] { item }));
+        }
+    }
+
+
+// Add as Singleton in WebApp Program.cs
+Code:
+builder.Services.AddSingleton<LogoutMemoryCache>();
+
+// Add logout check in OnValidatePrincipal event in .AddCookie in WebApp Program.cs
+Namespaces:
+using ITfoxtec.Identity;
+using ITfoxtec.Identity.Discovery;
+using ITfoxtec.Identity.Helpers;
+using ITfoxtec.Identity.Util;
+using System.Globalization;
+using WebApp.Identity;
+using WebApp.Models;
+
+Code:
+            var logoutMemoryCache = context.HttpContext.RequestServices.GetService<LogoutMemoryCache>();
+            var sessionId = context.Principal.Claims.Where(c => c.Type == JwtClaimTypes.SessionId).Select(c => c.Value).FirstOrDefault();
+            foreach (var item in logoutMemoryCache.List)
+            {
+                if (sessionId == item)
+                {
+                    logoutMemoryCache.Remove(item);
+                    // Handle Front-Channel Logout
+                    context.RejectPrincipal();
+                    await context.HttpContext.SignOutAsync();
+                    return;
+                }
+            }

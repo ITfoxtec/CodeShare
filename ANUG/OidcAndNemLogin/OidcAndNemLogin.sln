@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8072FE61-38A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{160A56B6-639C-43D5-852A-20AD918F7003}"
 	ProjectSection(SolutionItems) = preProject
+		ANUG code part one - OpenID Connect.txt = ANUG code part one - OpenID Connect.txt
 		README.md = README.md
 	EndProjectSection
 EndProject
