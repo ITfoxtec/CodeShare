@@ -1,12 +1,19 @@
 Test user: test@anug.com
      Pass: Formel1bil
 
+
+WebApp
+    Login redirect: https://localhost:44308/signin-oidc
+    Post logout redirect: https://localhost:44308/signout-callback-oidc
+    Front channel logout: https://localhost:44308/auth/frontchannellogout
+
+
 // **************************************************************************************************
 // OpenID Connect login and logout
 // **************************************************************************************************
 
 // Add OIDC in WebApp Program.cs
-Namespaces:
+Namespace:
 using ITfoxtec.Identity;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -68,7 +75,7 @@ app.UseAuthentication();
 
 
 // Add login and logout in WebApp AuthController.cs
-Namespaces:
+Namespace:
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -95,7 +102,7 @@ Code:
 // **************************************************************************************************
 
 // add access token in API call in WebApp HomeController.cs
-Namespaces:
+Namespace:
 using ITfoxtec.Identity;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -106,7 +113,7 @@ Code:
 
 
 // Add OAuth 2.0 Bearer Token Usage in API1 Program.cs
-Namespaces:
+Namespace:
 using ITfoxtec.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Logging;
@@ -166,7 +173,7 @@ Code (after options.SaveTokens = true;):
 
 
 // Add token refresh in .AddCookie in WebApp Program.cs
-Namespaces:
+Namespace:
 using ITfoxtec.Identity;
 using ITfoxtec.Identity.Discovery;
 using ITfoxtec.Identity.Helpers;
@@ -218,7 +225,7 @@ Code:
 
 
 // Add OIDC in WebApp RefreshTokenHandler.cs
-Namespaces:
+Namespace:
 using ITfoxtec.Identity.Messages;
 using ITfoxtec.Identity.Tokens;
 using ITfoxtec.Identity;
@@ -288,7 +295,7 @@ Code:
 
 
 // Add Oidc Discovery in WebApp Program.cs
-Namespaces:
+Namespace:
 using ITfoxtec.Identity.Discovery;
 
 Code:
@@ -306,7 +313,7 @@ builder.Services.AddSingleton((serviceProvider) =>
 // **************************************************************************************************
 
 // Add FrontChannelLogout in WebApp AuthController.cs
-Namespaces:
+Namespace:
 ﻿using ITfoxtec.Identity;
 using WebApp.Identity;
 
@@ -319,7 +326,7 @@ Code:
 
 
 // Add cache in WebApp LogoutMemoryCache.cs
-Namespaces:
+Namespace:
 ﻿using System.Collections.Concurrent;
 
 Code:
@@ -339,7 +346,7 @@ Code:
 builder.Services.AddSingleton<LogoutMemoryCache>();
 
 // Add logout check in OnValidatePrincipal event in .AddCookie in WebApp Program.cs
-Namespaces:
+Namespace:
 using ITfoxtec.Identity;
 using ITfoxtec.Identity.Discovery;
 using ITfoxtec.Identity.Helpers;
