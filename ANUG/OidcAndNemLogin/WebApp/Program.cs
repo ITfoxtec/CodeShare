@@ -100,6 +100,7 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("profile");
         options.Scope.Add("email");
         options.Scope.Add("role");
+        options.Scope.Add("nemlogin");
         options.Scope.Add("api1:read");
         options.Scope.Add("api1:update");
 

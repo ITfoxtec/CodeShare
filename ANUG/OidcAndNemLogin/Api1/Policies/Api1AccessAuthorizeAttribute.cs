@@ -15,7 +15,7 @@ namespace Api1.Policies
             options.AddPolicy(Name, policy =>
             {
                 policy.RequireScope("api1:read", "api1:update");
-                policy.RequireRole("api1.read");
+                //policy.RequireRole("api1.read");
             });
         }
     }
