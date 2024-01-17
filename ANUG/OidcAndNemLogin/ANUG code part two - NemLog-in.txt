@@ -12,7 +12,9 @@ MitID test users:
 
 NemLog-in admin portal: https://administration.nemlog-in.dk/
 
-NemLog-in test IdP metadata: https://cms.nemlog-in.dk/media/rbbbyajf/oiosaml3-inttest-idp-metadata-13-03-2023.txt 
+NemLog-in docs test  https://tu.nemlog-in.dk/oprettelse-og-administration-af-tjenester/log.in/dokumentation-og-guides/integrationstestmiljo/   
+
+    NemLog-in test IdP metadata: https://cms.nemlog-in.dk/media/rbbbyajf/oiosaml3-inttest-idp-metadata-13-03-2023.txt 
 
 // **************************************************************************************************
 // NemLog-in up-party
