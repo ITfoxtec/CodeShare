@@ -101,15 +101,8 @@ Code:
 // OAuth 2.0 API
 // **************************************************************************************************
 
-// add access token in API call in WebApp HomeController.cs
-Namespace:
-using ITfoxtec.Identity;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-
-Code:
-            var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
-            client.SetAuthorizationHeaderBearer(accessToken);
+Role scope: role
+API scope: read and update
 
 
 // Add OAuth 2.0 Bearer Token Usage in API1 Program.cs
@@ -160,6 +153,17 @@ builder.Services
 // Add UseAuthentication in API1 Program.cs
 Code:
 app.UseAuthentication();
+
+
+// add access token in API call in WebApp HomeController.cs
+Namespace:
+using ITfoxtec.Identity;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+
+Code:
+            var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            client.SetAuthorizationHeaderBearer(accessToken);
 
 
 // **************************************************************************************************
