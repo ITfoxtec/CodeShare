@@ -1,6 +1,9 @@
+using ITfoxtec.Identity;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using WebApp.Models;
@@ -38,7 +41,8 @@ namespace WebApp.Controllers
         public async Task<IActionResult> CallApi1()
         {
             var client = httpClientFactory.CreateClient();
-            // add access token
+            var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+            client.SetAuthorizationHeaderBearer(accessToken);
 
             using var response = await client.GetAsync(appSettings.Api1Url);
             if (response.IsSuccessStatusCode)

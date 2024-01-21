@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		ANUG code part one - OpenID Connect.txt = ANUG code part one - OpenID Connect.txt
 		ANUG code part two - NemLog-in.txt = ANUG code part two - NemLog-in.txt
 		README.md = README.md
+		Talk - OpenID Connect and NemLog-in – introduction and code.pptx = Talk - OpenID Connect and NemLog-in – introduction and code.pptx
 	EndProjectSection
 EndProject
 Global

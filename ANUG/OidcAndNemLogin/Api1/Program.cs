@@ -1,11 +1,49 @@
 using Api1.Models;
 using Api1.Policies;
+using ITfoxtec.Identity;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var identitySettings = builder.Services.BindConfig<IdentitySettings>(builder.Configuration, nameof(IdentitySettings));
 
-// Add OAuth 2.0 Bearer Token Usage
+IdentityModelEventSource.ShowPII = true; //To show detail of error and see the problem
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = identitySettings.FoxIDsAuthority;
+        options.Audience = identitySettings.ResourceId;
+
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters.NameClaimType = JwtClaimTypes.Subject;
+        options.TokenValidationParameters.RoleClaimType = JwtClaimTypes.Role;
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async (context) =>
+            {
+                await Task.FromResult(string.Empty);
+            },
+            OnAuthenticationFailed = async (context) =>
+            {
+                // TODO log error
+                if (context.Exception != null)
+                {
+                    throw new Exception("Authentication failure.", context.Exception);
+                }
+                await Task.FromResult(string.Empty);
+            },
+            OnForbidden = async (context) =>
+            {
+                // TODO log error / Status Code
+                throw new Exception($"Forbidden failure. StatusCode: {context.Response?.StatusCode}.");
+                await Task.FromResult(string.Empty);
+            }
+        };
+    });
 
 // Access policy
 builder.Services.AddAuthorization(Api1AccessAuthorizeAttribute.AddPolicy);
@@ -26,7 +64,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Add UseAuthentication
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
