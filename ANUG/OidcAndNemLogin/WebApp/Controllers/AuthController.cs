@@ -1,12 +1,20 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+﻿using ITfoxtec.Identity;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc;
+using WebApp.Identity;
 
 namespace WebApp.Controllers
 {
     public class AuthController : Controller
     {
+        private LogoutMemoryCache logoutMemoryCache;
+        public AuthController(LogoutMemoryCache logoutMemoryCache)
+        {
+            this.logoutMemoryCache = logoutMemoryCache;
+        }
+
         public IActionResult Login()
         {
             var redirectUrl = Url.Action(nameof(HomeController.Secure), "Home");
@@ -19,6 +27,12 @@ namespace WebApp.Controllers
             var callbackUrl = Url.Action(nameof(HomeController.Index), "Home", values: null, protocol: Request.Scheme);
             return SignOut(new AuthenticationProperties { RedirectUri = callbackUrl },
                 CookieAuthenticationDefaults.AuthenticationScheme, OpenIdConnectDefaults.AuthenticationScheme);
+        }
+
+        public IActionResult FrontChannelLogout([FromQuery(Name = JwtClaimTypes.Issuer)] string issuer, [FromQuery(Name = JwtClaimTypes.SessionId)] string sessionId)
+        {
+            logoutMemoryCache.List.Add(sessionId);
+            return Ok();
         }
     }
 }
