@@ -11,12 +11,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HelperLibrary", "HelperLibr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "down-parties", "down-parties", "{B7D9A6AA-7CAC-4637-ACE9-2F7DCEDC7865}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E04353DF-771E-4DF8-811C-539C1D3F7377}"
-	ProjectSection(SolutionItems) = preProject
-		README.md = README.md
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{8072FE61-38A1-4DB1-8196-1074D34E15C3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{58674264-6613-4D4B-A95D-A2C48726F3D2}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{160A56B6-639C-43D5-852A-20AD918F7003}"
+	ProjectSection(SolutionItems) = preProject
+		ANUG code part one - OpenID Connect.txt = ANUG code part one - OpenID Connect.txt
+		ANUG code part two - NemLog-in.txt = ANUG code part two - NemLog-in.txt
+		README.md = README.md
+		Talk - OpenID Connect and NemLog-in – introduction and code.pptx = Talk - OpenID Connect and NemLog-in – introduction and code.pptx
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,8 +46,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{2048C4E2-1ED6-4039-88E6-69C4211560E2} = {B7D9A6AA-7CAC-4637-ACE9-2F7DCEDC7865}
 		{14D14217-55EE-488B-8830-0B295246729A} = {B7D9A6AA-7CAC-4637-ACE9-2F7DCEDC7865}
-		{A5727A63-35B5-4993-B41D-FC6942DFF232} = {58674264-6613-4D4B-A95D-A2C48726F3D2}
-		{B7D9A6AA-7CAC-4637-ACE9-2F7DCEDC7865} = {58674264-6613-4D4B-A95D-A2C48726F3D2}
+		{A5727A63-35B5-4993-B41D-FC6942DFF232} = {8072FE61-38A1-4DB1-8196-1074D34E15C3}
+		{B7D9A6AA-7CAC-4637-ACE9-2F7DCEDC7865} = {8072FE61-38A1-4DB1-8196-1074D34E15C3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EF53AF08-9D48-45CD-BD8C-BBF2E47FB348}

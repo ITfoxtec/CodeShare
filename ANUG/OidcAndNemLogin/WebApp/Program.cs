@@ -126,7 +126,6 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
-
 builder.Services.AddTransient<TokenExecuteHelper>();
 builder.Services.AddSingleton<LogoutMemoryCache>();
 
@@ -149,6 +148,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(

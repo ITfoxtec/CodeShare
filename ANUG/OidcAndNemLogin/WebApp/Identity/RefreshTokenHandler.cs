@@ -62,6 +62,6 @@ namespace WebApp.Identity
                 default:
                     throw new Exception($"Error, Status Code not expected. StatusCode={response.StatusCode}");
             }
-        }
+        }      
     }
 }

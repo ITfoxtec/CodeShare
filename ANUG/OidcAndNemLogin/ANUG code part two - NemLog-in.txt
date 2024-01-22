@@ -1,0 +1,103 @@
+MitID test users:
+    CPR: 1410952133
+    Alias: tec01
+    MitID
+    Simulator: https://pp.mitid.dk/test-tool/code-app-simulator/#/95190f19-7727-41f1-ad88-c5528670a481/details/A-5810-6296-1388?returnUrl=%2Ftest-tool%2Ffrontend%2F%23%2Fview-identity%3Fc%3D1647512257216
+ 
+    CPR: 0806833781
+    Alias: tec02
+    MitID
+    Simulator: https://pp.mitid.dk/test-tool/code-app-simulator/#/e5fa0502-5c06-4c1f-8e4e-5b1c3e5291a3/details/A-1739-0025-8367?returnUrl=%2Ftest-tool%2Ffrontend%2F%23%2Fview-identity%3Fc%3D1647512382870
+
+
+NemLog-in admin portal: https://administration.nemlog-in.dk/
+
+NemLog-in docs test  https://tu.nemlog-in.dk/oprettelse-og-administration-af-tjenester/log.in/dokumentation-og-guides/integrationstestmiljo/   
+
+    NemLog-in test IdP metadata: https://cms.nemlog-in.dk/media/rbbbyajf/oiosaml3-inttest-idp-metadata-13-03-2023.txt 
+
+// **************************************************************************************************
+// NemLog-in up-party
+// **************************************************************************************************
+
+Connect to NemLog-in docs: https://www.foxids.com/docs/up-party-howto-saml-2.0-nemlogin 
+
+//  NemLog-in up-party 
+    Session lifetime: 1800 seconds - 30 minus
+
+    SP Issuer: https://saml.foxids.com/anug/nemlogin-test/
+
+    NameID format: urn:oasis:names:tc:SAML:2.0:nameid-format:persistent
+
+    Attribute consuming service
+        Service name: FoxIDs - ANUG
+        Claims format: urn:oasis:names:tc:SAML:2.0:attrname-format:uri
+        Claims: 
+            https://data.gov.dk/concept/core/nsis/loa
+            https://data.gov.dk/model/core/eid/cprNumber - only for public 
+            https://data.gov.dk/model/core/eid/cprUuid
+            https://data.gov.dk/model/core/eid/email
+            https://data.gov.dk/model/core/eid/firstName
+            https://data.gov.dk/model/core/eid/lastName
+            https://data.gov.dk/model/core/eid/professional/cvr
+            https://data.gov.dk/model/core/eid/professional/orgName
+            https://data.gov.dk/model/core/eid/professional/uuid/persistent
+            https://data.gov.dk/model/core/eid/professional/rid
+            https://data.gov.dk/model/core/specVersion
+   
+    Up-party metadata: https://foxids.com/anug/nemlogin-test/.nemlogin-test./saml/spmetadata
+
+
+// **************************************************************************************************
+// Claim mappings and scope
+// **************************************************************************************************
+
+// Map claims
+    https://data.gov.dk/concept/core/nsis/loa
+        loa
+    https://data.gov.dk/model/core/eid/cprNumber - only for public 
+        cpr_nummber
+    https://data.gov.dk/model/core/eid/cprUuid
+        cpr_uuid
+    https://data.gov.dk/model/core/eid/email
+        email
+    https://data.gov.dk/model/core/eid/firstName
+        given_name
+    https://data.gov.dk/model/core/eid/lastName
+        family_name
+    https://data.gov.dk/model/core/eid/professional/cvr
+        cvr
+    https://data.gov.dk/model/core/eid/professional/orgName
+        org_name
+    https://data.gov.dk/model/core/eid/professional/uuid/persistent
+        pro_uuid
+    https://data.gov.dk/model/core/eid/professional/rid
+        rid
+    https://data.gov.dk/model/core/specVersion
+        spec_version
+
+
+// OIDC down-party scope
+    Scope: nemlogin
+        Claims:
+            loa - include in ID Token
+            cpr_nummber - only for public 
+            cpr_uuid
+            cvr
+            org_name
+            rid
+            spec_version
+
+
+// Add scope to in WebApp Program.cs
+Code:
+        options.Scope.Add("nemlogin");
+
+
+// **************************************************************************************************
+// API role
+// **************************************************************************************************
+
+// Comment out role requirement in API1 Api1AccessAuthorizeAttribute.cs
+Code:
+                // policy.RequireRole("api1.read");
