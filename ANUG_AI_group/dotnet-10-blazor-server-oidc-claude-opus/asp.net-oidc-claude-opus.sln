@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asp.net-oidc-claude-opus", "asp.net-oidc-claude-opus.csproj", "{86D7D2A8-A760-698B-CE9E-13FD19DC2CAA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{86D7D2A8-A760-698B-CE9E-13FD19DC2CAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86D7D2A8-A760-698B-CE9E-13FD19DC2CAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86D7D2A8-A760-698B-CE9E-13FD19DC2CAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86D7D2A8-A760-698B-CE9E-13FD19DC2CAA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {48C23F52-C8EA-4753-BF9F-006963F1F729}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,50 @@
+﻿@inject NavigationManager NavigationManager
+
+@inherits LayoutComponentBase
+
+<PageTitle>FoxIDs OIDC Blazor Demo</PageTitle>
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex justify-content-between align-items-center">
+            <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>
+
+            <AuthorizeView>
+                <Authorized>
+                    <a class="btn btn-outline-secondary btn-sm" href="@LogoutUrl">Log off</a>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="btn btn-primary btn-sm" href="@LoginUrl">Log in</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private string LoginUrl => $"/account/login?returnUrl={Uri.EscapeDataString(GetReturnUrl())}";
+
+    private string LogoutUrl => $"/account/logout?returnUrl={Uri.EscapeDataString(GetReturnUrl())}";
+
+    private string GetReturnUrl()
+    {
+        var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+
+        if (string.IsNullOrWhiteSpace(relativePath))
+        {
+            return "/";
+        }
+
+        return relativePath.StartsWith("/", StringComparison.Ordinal)
+            ? relativePath
+            : $"/{relativePath}";
+    }
+}

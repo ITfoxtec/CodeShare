@@ -1,0 +1,68 @@
+﻿@page "/"
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>FoxIDs OIDC Demo</PageTitle>
+
+<h1>FoxIDs OpenID Connect</h1>
+
+<p>This Blazor Server app uses an ASP.NET Core cookie for the local session and OpenID Connect for FoxIDs sign-in.</p>
+
+<AuthorizeView>
+	<Authorized>
+		<p class="mb-3">Signed in as <strong>@displayName</strong>.</p>
+
+		<div class="alert alert-warning" role="alert">
+			Temporary debug output: remove the claims display below before this app goes to production.
+		</div>
+
+		<div class="card shadow-sm">
+			<div class="card-body">
+				<h2 class="h5">Claims</h2>
+
+				<table class="table table-sm align-middle mb-0">
+					<thead>
+						<tr>
+							<th scope="col">Type</th>
+							<th scope="col">Value</th>
+						</tr>
+					</thead>
+					<tbody>
+						@foreach (var claim in claims)
+						{
+							<tr>
+								<td><code>@claim.Type</code></td>
+								<td>@claim.Value</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</Authorized>
+	<NotAuthorized>
+		<div class="alert alert-info" role="alert">
+			Select Log in in the top bar to authenticate with FoxIDs.
+		</div>
+	</NotAuthorized>
+</AuthorizeView>
+
+@code {
+	private IReadOnlyList<Claim> claims = [];
+	private string displayName = "anonymous";
+
+	protected override async Task OnInitializedAsync()
+	{
+		var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+		var user = authenticationState.User;
+
+		claims = user.Claims
+			.OrderBy(claim => claim.Type, StringComparer.Ordinal)
+			.ToList();
+
+		displayName = user.FindFirst("email")?.Value
+			?? user.Identity?.Name
+			?? user.FindFirst("sub")?.Value
+			?? "authenticated user";
+	}
+}

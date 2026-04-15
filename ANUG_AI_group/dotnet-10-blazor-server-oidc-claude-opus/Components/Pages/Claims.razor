@@ -1,0 +1,36 @@
+@page "/claims"
+@attribute [Authorize]
+
+<PageTitle>Claims</PageTitle>
+
+<h1>Claims</h1>
+
+@* ============================================================
+   DEBUG ONLY – Remove this entire page before production use.
+   ============================================================ *@
+
+<div class="alert alert-warning">
+    <strong>Debug view:</strong> This page displays all identity claims and must be removed before production deployment.
+</div>
+
+<AuthorizeView>
+    <Authorized>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Claim Type</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in context.User.Claims)
+                {
+                    <tr>
+                        <td>@claim.Type</td>
+                        <td>@claim.Value</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </Authorized>
+</AuthorizeView>
