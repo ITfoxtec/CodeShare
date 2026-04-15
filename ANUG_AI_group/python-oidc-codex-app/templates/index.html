@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block body %}
+  <section class="hero">
+    <p class="eyebrow">FoxIDs OpenID Connect</p>
+    <h1>Server-side Flask login with a session cookie.</h1>
+    <p>
+      This sample uses the authorization code flow with response type <code>code</code>,
+      scopes <code>openid profile email</code>, and keeps tokens on the server in a
+      filesystem-backed session.
+    </p>
+    <div class="actions">
+      {% if current_user %}
+        <a class="button primary" href="{{ url_for('logout') }}">Log off</a>
+      {% else %}
+        <a class="button primary" href="{{ url_for('login') }}">Log in</a>
+      {% endif %}
+      <a class="button secondary" href="{{ url_for('protected_api') }}">Protected API</a>
+    </div>
+  </section>
+
+  <section class="grid">
+    <article class="panel">
+      <p class="eyebrow">Configuration</p>
+      <h2>FoxIDs settings</h2>
+      {% if configured %}
+        <dl>
+          <dt>Authority</dt>
+          <dd>{{ authority }}</dd>
+          <dt>ClientId</dt>
+          <dd>Loaded from <code>FOXIDS_CLIENT_ID</code></dd>
+          <dt>ClientSecret</dt>
+          <dd>Loaded from <code>FOXIDS_CLIENT_SECRET</code></dd>
+          <dt>Discovery</dt>
+          <dd>{{ "Enabled" if use_discovery else "Disabled" }}</dd>
+          <dt>Redirect URI</dt>
+          <dd><code>{{ redirect_uri }}</code> from <code>APP_BASE_URL</code></dd>
+        </dl>
+      {% else %}
+        <p>Add the missing settings before logging in.</p>
+        <ul>
+          {% for setting in missing_settings %}
+            <li><code>{{ setting }}</code></li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </article>
+
+    <article class="panel">
+      <p class="eyebrow">Access</p>
+      <h2>Protected data</h2>
+      {% if current_user %}
+        <dl>
+          <dt>Name claim type</dt>
+          <dd><code>sub</code></dd>
+          <dt>Role claim type</dt>
+          <dd><code>role</code></dd>
+          <dt>Subject</dt>
+          <dd>{{ protected_data.subject or "No sub claim returned" }}</dd>
+          <dt>Email</dt>
+          <dd>{{ protected_data.email or "No email claim returned" }}</dd>
+          <dt>Roles</dt>
+          <dd>
+            {% if protected_data.roles %}
+              {{ protected_data.roles | join(", ") }}
+            {% else %}
+              No role claims returned
+            {% endif %}
+          </dd>
+        </dl>
+        <p>Anonymous users do not receive this data or the protected API response.</p>
+      {% else %}
+        <p>Protected data is hidden until the user has an authenticated session.</p>
+      {% endif %}
+    </article>
+  </section>
+
+  {% if current_user %}
+    <section class="panel" style="margin-top: 1rem;">
+      <p class="eyebrow">Temporary Debug Only</p>
+      <h2>Claims from the validated login</h2>
+      <div class="debug-note">
+        Remove this raw claims display after FoxIDs integration is verified.
+      </div>
+      <pre>{{ current_user.claims | tojson(indent=2) }}</pre>
+    </section>
+  {% endif %}
+{% endblock %}

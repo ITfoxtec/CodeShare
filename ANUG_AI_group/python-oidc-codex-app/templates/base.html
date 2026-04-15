@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FoxIDs Flask OIDC Sample</title>
+    <style>
+      :root {
+        --bg: #f4f1ea;
+        --panel: #fffdf8;
+        --ink: #1f2933;
+        --muted: #52606d;
+        --brand: #0f766e;
+        --brand-strong: #115e59;
+        --line: #d9d3c6;
+        --warn: #8a4b08;
+        --warn-bg: #fff3df;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top right, rgba(15, 118, 110, 0.18), transparent 32%),
+          linear-gradient(180deg, #f8f5ef 0%, var(--bg) 100%);
+      }
+
+      a {
+        color: var(--brand-strong);
+      }
+
+      .shell {
+        width: min(980px, calc(100% - 2rem));
+        margin: 2rem auto 3rem;
+      }
+
+      .hero,
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        box-shadow: 0 18px 50px rgba(31, 41, 51, 0.08);
+      }
+
+      .hero {
+        padding: 2rem;
+      }
+
+      .hero h1 {
+        margin: 0 0 0.75rem;
+        font-size: clamp(2rem, 5vw, 3.6rem);
+        line-height: 1;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 42rem;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+
+      .actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 9rem;
+        padding: 0.8rem 1.1rem;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .button.primary {
+        background: var(--brand);
+        color: #fff;
+      }
+
+      .button.secondary {
+        background: transparent;
+        border-color: var(--line);
+        color: var(--ink);
+      }
+
+      .flash-list,
+      .grid {
+        margin-top: 1.5rem;
+      }
+
+      .flash {
+        padding: 0.9rem 1rem;
+        border-radius: 12px;
+        margin-top: 0.75rem;
+      }
+
+      .flash.success {
+        background: #e7f8f3;
+        color: #0b5d4f;
+      }
+
+      .flash.warning,
+      .flash.error {
+        background: var(--warn-bg);
+        color: var(--warn);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+      }
+
+      .panel {
+        padding: 1.25rem;
+      }
+
+      .eyebrow {
+        margin: 0 0 0.4rem;
+        color: var(--brand-strong);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+
+      h2 {
+        margin: 0 0 0.8rem;
+        font-size: 1.35rem;
+      }
+
+      dl {
+        margin: 0;
+      }
+
+      dt {
+        font-weight: 700;
+      }
+
+      dd {
+        margin: 0.2rem 0 0.85rem;
+        color: var(--muted);
+      }
+
+      pre {
+        margin: 0;
+        padding: 1rem;
+        overflow-x: auto;
+        border-radius: 14px;
+        background: #17212b;
+        color: #f5f7fa;
+      }
+
+      ul {
+        padding-left: 1.2rem;
+      }
+
+      .debug-note {
+        margin-bottom: 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        background: var(--warn-bg);
+        color: var(--warn);
+        font-weight: 700;
+      }
+
+      @media (max-width: 640px) {
+        .hero,
+        .panel {
+          padding: 1.1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <section class="flash-list">
+            {% for category, message in messages %}
+              <div class="flash {{ category }}">{{ message }}</div>
+            {% endfor %}
+          </section>
+        {% endif %}
+      {% endwith %}
+      {% block body %}{% endblock %}
+    </main>
+  </body>
+</html>
+
