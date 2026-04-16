@@ -7,14 +7,26 @@ from urllib.parse import urljoin
 
 import requests
 from authlib.integrations.flask_client import OAuth
+from authlib.oidc.core import CodeIDToken
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, session, url_for
 from flask_session import Session
+
+load_dotenv(override=True)
 
 from config import Config
 
 
 AUTH_SCOPE = "openid profile email"
+
+
+class FoxIDsCodeIDToken(CodeIDToken):
+    def validate_amr(self):
+        amr = self.get("amr")
+        if isinstance(amr, str):
+            self["amr"] = [amr]
+            return
+        super().validate_amr()
 
 
 def _missing_settings(app: Flask) -> list[str]:
@@ -64,11 +76,14 @@ def _login_required(view_func):
     return wrapped
 
 
-def _fetch_fallback_userinfo(authority: str, access_token: str) -> dict[str, Any]:
+def _fetch_fallback_userinfo(
+    authority: str, access_token: str, verify_tls: bool | str
+) -> dict[str, Any]:
     response = requests.get(
         f"{authority}/oauth/userinfo",
         headers={"Authorization": f"Bearer {access_token}"},
         timeout=10,
+        verify=verify_tls,
     )
     response.raise_for_status()
     return response.json()
@@ -87,7 +102,10 @@ def _register_foxids(oauth: OAuth, app: Flask):
         "name": "foxids",
         "client_id": app.config["FOXIDS_CLIENT_ID"],
         "client_secret": app.config["FOXIDS_CLIENT_SECRET"],
-        "client_kwargs": {"scope": AUTH_SCOPE},
+        "client_kwargs": {
+            "scope": AUTH_SCOPE,
+            "verify": app.config["FOXIDS_VERIFY_TLS"],
+        },
         "authorize_params": {"response_type": "code"},
     }
 
@@ -104,8 +122,6 @@ def _register_foxids(oauth: OAuth, app: Flask):
 
 
 def create_app() -> Flask:
-    load_dotenv()
-
     app = Flask(__name__)
     app.config.from_object(Config)
 
@@ -167,15 +183,17 @@ def create_app() -> Flask:
             return redirect(url_for("index"))
 
         try:
-            token = foxids.authorize_access_token()
+            token = foxids.authorize_access_token(claims_cls=FoxIDsCodeIDToken)
             claims = token.get("userinfo")
 
             if not claims and token.get("id_token") and app.config["FOXIDS_USE_DISCOVERY"]:
-                claims = foxids.parse_id_token(token)
+                claims = foxids.parse_id_token(token, claims_cls=FoxIDsCodeIDToken)
 
             if not claims:
                 claims = _fetch_fallback_userinfo(
-                    app.config["FOXIDS_AUTHORITY"], token["access_token"]
+                    app.config["FOXIDS_AUTHORITY"],
+                    token["access_token"],
+                    app.config["FOXIDS_VERIFY_TLS"],
                 )
 
             session["token"] = {

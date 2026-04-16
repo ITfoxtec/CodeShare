@@ -16,6 +16,24 @@ def _env_flag(name: str, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _env_requests_verify(name: str, default: bool) -> bool | str:
+    value = os.getenv(name)
+    if value is None:
+        return default
+
+    normalized = value.strip()
+    lowered = normalized.lower()
+    if lowered in {"1", "true", "yes", "on"}:
+        return True
+    if lowered in {"0", "false", "no", "off"}:
+        return False
+
+    verify_path = Path(os.path.expandvars(normalized)).expanduser()
+    if not verify_path.is_absolute():
+        verify_path = BASE_DIR / verify_path
+    return str(verify_path)
+
+
 class Config:
     SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "dev-change-me")
 
@@ -33,4 +51,5 @@ class Config:
     FOXIDS_CLIENT_ID = os.getenv("FOXIDS_CLIENT_ID", "")
     FOXIDS_CLIENT_SECRET = os.getenv("FOXIDS_CLIENT_SECRET", "")
     FOXIDS_USE_DISCOVERY = _env_flag("FOXIDS_USE_DISCOVERY", True)
+    FOXIDS_VERIFY_TLS = _env_requests_verify("FOXIDS_VERIFY_TLS", True)
 
