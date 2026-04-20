@@ -7,7 +7,6 @@ from urllib.parse import urljoin
 
 import requests
 from authlib.integrations.flask_client import OAuth
-from authlib.oidc.core import CodeIDToken
 from dotenv import load_dotenv
 from flask import Flask, flash, redirect, render_template, session, url_for
 from flask_session import Session
@@ -18,15 +17,6 @@ from config import Config
 
 
 AUTH_SCOPE = "openid profile email"
-
-
-class FoxIDsCodeIDToken(CodeIDToken):
-    def validate_amr(self):
-        amr = self.get("amr")
-        if isinstance(amr, str):
-            self["amr"] = [amr]
-            return
-        super().validate_amr()
 
 
 def _missing_settings(app: Flask) -> list[str]:
@@ -183,11 +173,11 @@ def create_app() -> Flask:
             return redirect(url_for("index"))
 
         try:
-            token = foxids.authorize_access_token(claims_cls=FoxIDsCodeIDToken)
+            token = foxids.authorize_access_token()
             claims = token.get("userinfo")
 
             if not claims and token.get("id_token") and app.config["FOXIDS_USE_DISCOVERY"]:
-                claims = foxids.parse_id_token(token, claims_cls=FoxIDsCodeIDToken)
+                claims = foxids.parse_id_token(token)
 
             if not claims:
                 claims = _fetch_fallback_userinfo(

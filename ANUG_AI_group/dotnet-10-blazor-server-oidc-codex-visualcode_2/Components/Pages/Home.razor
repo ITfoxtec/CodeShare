@@ -1,0 +1,83 @@
+﻿@page "/"
+
+@using System.Security.Claims
+
+<PageTitle>FoxIDs Sign In</PageTitle>
+
+<h1>FoxIDs OpenID Connect</h1>
+
+<p>This Blazor app uses ASP.NET Core cookie authentication with OpenID Connect discovery against FoxIDs.</p>
+
+@if (isAuthenticated)
+{
+	<div class="alert alert-success" role="alert">
+		You are signed in as <strong>@subject</strong>.
+	</div>
+
+	<p>
+		Protected content is available on the <a href="/protected-data">protected data page</a>.
+	</p>
+
+	<div class="alert alert-warning" role="alert">
+		Temporary debug claims display below. Remove this before production.
+	</div>
+
+	<table class="table table-sm table-striped align-middle">
+		<thead>
+			<tr>
+				<th>Claim type</th>
+				<th>Claim value</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var claim in claims)
+			{
+				<tr>
+					<td><code>@claim.Type</code></td>
+					<td>@claim.Value</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+else
+{
+	<div class="alert alert-secondary" role="alert">
+		You are not signed in. Protected data and authenticated fetches stay disabled until you log in.
+	</div>
+}
+
+@code {
+	[CascadingParameter]
+	private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
+
+	private Claim[] claims = [];
+	private bool isAuthenticated;
+	private string? subject;
+
+	protected override async Task OnParametersSetAsync()
+	{
+		if (AuthenticationStateTask is null)
+		{
+			claims = [];
+			isAuthenticated = false;
+			subject = null;
+			return;
+		}
+
+		var authenticationState = await AuthenticationStateTask;
+		var user = authenticationState.User;
+
+		if (user.Identity?.IsAuthenticated != true)
+		{
+			claims = [];
+			isAuthenticated = false;
+			subject = null;
+			return;
+		}
+
+		claims = user.Claims.OrderBy(claim => claim.Type).ToArray();
+		isAuthenticated = true;
+		subject = user.FindFirst("sub")?.Value ?? user.Identity?.Name;
+	}
+}

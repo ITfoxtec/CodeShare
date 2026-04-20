@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-10-blazor-server-oidc-codex-visualcode_2", "dotnet-10-blazor-server-oidc-codex-visualcode_2.csproj", "{9E821F5F-76FA-FE40-0A87-7E64096E77DE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9E821F5F-76FA-FE40-0A87-7E64096E77DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E821F5F-76FA-FE40-0A87-7E64096E77DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E821F5F-76FA-FE40-0A87-7E64096E77DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E821F5F-76FA-FE40-0A87-7E64096E77DE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E89FE4C4-FA49-4F94-AB2E-6C1C7BE3D9ED}
+	EndGlobalSection
+EndGlobal

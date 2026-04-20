@@ -1,0 +1,46 @@
+﻿@inject NavigationManager NavigationManager
+@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row px-4 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+
+            <AuthorizeView>
+                <Authorized>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span class="text-muted small">Signed in as @context.User.Identity?.Name</span>
+                        <form method="post" action="/account/logout" class="d-inline">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="returnUrl" value="@CurrentPathAndQuery" />
+                            <button type="submit" class="btn btn-outline-secondary btn-sm">Log off</button>
+                        </form>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <a class="btn btn-primary btn-sm" href="@LoginPath">Log in</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private string CurrentPathAndQuery => NavigationManager.ToAbsoluteUri(NavigationManager.Uri).PathAndQuery;
+
+    private string LoginPath => $"/account/login?returnUrl={Uri.EscapeDataString(CurrentPathAndQuery)}";
+}

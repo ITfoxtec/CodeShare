@@ -1,0 +1,23 @@
+﻿@inject NavigationManager NavigationManager
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <LayoutView Layout="typeof(Layout.MainLayout)">
+                    <PageTitle>Sign In Required</PageTitle>
+
+                    <h1>Sign in required</h1>
+
+                    <p>You must sign in before protected content is shown.</p>
+                    <a class="btn btn-primary" href="@LoginPath">Log in</a>
+                </LayoutView>
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    private string LoginPath => $"/account/login?returnUrl={Uri.EscapeDataString(NavigationManager.ToAbsoluteUri(NavigationManager.Uri).PathAndQuery)}";
+}
